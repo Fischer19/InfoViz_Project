@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<header>
+    <title>Assignment1</title>
+    <link href="style.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+</header>
+
+<body>
+    <h1>Bubbleplot</h1>
+    <div id="bubble">
+        <script>
+            d3.csv("countries_of_world.csv", function(data){
+                var width = 400;
+                var height = 400;
+
+                var margin = {
+                    left: 50,
+                    right: 30,
+                    top: 50,
+                    bottom: 50
+                };
+
+                //var svg = d3.select("svg")
+
+                var svg = d3.select("#bubble")
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                var xScale = d3.scale.linear()
+                    .domain([d3.min([0, d3.min(data, function(d){
+                        return parseFloat(d["Population"]);
+                    })]), 
+                    d3.max([0, d3.max(data, function(d){
+                        return parseFloat(d["Population"]);
+                    })])
+                    ])
+                    .range([0, width]);
+
+                var yScale = d3.scale.linear()
+                    .domain([d3.min([0, d3.min(data, function(d){
+                        return parseFloat(d["Population"]);
+                    })]), 
+                    d3.max([0, d3.max(data, function(d){
+                        return parseFloat(d["Population"]);
+                    })])
+                    ])
+                    .range([height, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .ticks(5)
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .ticks(5)
+                    .orient("left");
+                
+                var plot_data = new Array();
+                var x_axis = "Population";
+                var y_axis = "Population"
+                var country = ["Africa", "Asia", "Europe", "South Africa", "North Africa", "Oceania"];
+                var color = ["red", "blue", "green", "yellow", "violet", "pink"];
+                var region = new Array();
+                for (var i=0; i<6; i++){
+                    region[i] = new Array()
+                    region[i][0] = country[i];
+                    region[i][1] = color[i];
+                }
+                //create region labels
+                
+                svg.selectAll("rect")
+                    .data(region)
+                    .enter()
+                    .append("rect")
+                    .attr("y", function(d, i){
+                        return 10*i;
+                    })
+                    .attr("x", width - 200)
+                    .attr("width", 10)
+                    .attr("height", 5)
+                    .attr("fill", function(d){
+                        return d[1];
+                    });
+                
+                svg.selectAll("text")
+                    .data(region)
+                    .enter()
+                    .append("text")
+                    .attr("y", function(d, i){
+                        return 10*i +6;
+                    })
+                    .attr("x", width - 180)
+                    .attr("font-size", 10)
+                    .text(function(d){
+                        return d[0];
+                    });
+
+                //selecting data from original file
+                function create_data(name){
+                    plot_data = new Array();
+                    for (var i = 0; i<data.length; i++){
+                        plot_data[i] = new Array();
+                        plot_data[i][0] = data[i][name];
+                        plot_data[i][1] = data[i][name];
+                        plot_data[i][2] = data[i]["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '');
+                        plot_data[i][3] = data[i]["Country"];
+                    }
+                    return plot_data
+                }
+                //plot bubbles
+                dots = svg.selectAll(".dot")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("class", "dot")
+                    .attr("cx", function(d, i){
+                        return xScale(d[x_axis]);
+                    })
+                    .attr("cy", function(d, i){
+                        return yScale(d[y_axis]);
+                    })
+                    .attr("r", 5)
+                    .attr("id", "circle")
+                    .on("mouseover", function (d, i){
+                        svg.append("text")
+                            .attr("x", xScale(d[x_axis]) + 10)
+                            .attr("y", yScale(d[y_axis]) + 10)
+                            .attr("font-size", 10)
+                            .text(d["Country"])
+                            .attr("id", 'Country');
+                    })
+                    .on("mouseout", function (){
+                        d3.select("#Country").remove();
+                    })
+                    .on("click", function(){
+                        d3.select(this).style("visibility", "hidden");
+                        svg.select("#country").remove();
+                    })
+                    .attr("fill", function(d){
+                        if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "Africa"){
+                            return "red"
+                        }
+                        else if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "Asia"){
+                            return "blue"
+                        }
+                        else if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "Europe"){
+                            return "green"
+                        }
+                        else if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "South America"){
+                            return "yellow"
+                        }
+                        else if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "North America"){
+                            return "violet"
+                        }
+                        else if (d["Region"].replace(/^(\s|\xA0)+|(\s|\xA0)+$/g, '') == "Oceania"){
+                            return "pink"
+                        }
+                        else{
+                            return "black"
+                        }
+                        
+                    });
+
+                svg.append("text")
+                    .attr("font-size", 10)
+                    .attr("class", "x label")
+                    .attr("text-anchor", "end")
+                    .attr("x", width - 200)
+                    .attr("y", height - 10)
+                    .text("Population")
+
+                svg.append("text")
+                    .attr("font-size", 10)
+                    .attr("class", "y label")
+                    .attr("text-anchor", "middle")
+                    .attr("transform", "rotate(90)")
+                    .attr("x", 20)
+                    .attr("y", -10)
+                    .text("Population")
+
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+                
+                svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0,0)")
+                    .call(yAxis);
+
+                //Create the menu
+                var order = new Array();
+                order = d3.keys(data[0])
+                order.splice(0,2)
+                var menu1 = d3.select("body")
+                    .append("div")
+                    .attr("id", "menu");
+                var text = menu1.append('span')
+                    .text('Select X-Axis variable: ');
+                var options = menu1.append('select')
+                    .attr('id', 'options')
+                    .on('change', changeCordX) //the event listener!
+                    .selectAll('option')
+                    .data(order)
+                    .enter()
+                    .append('option')
+                    .attr("value", function (d) {
+                        return d;
+                    })
+                    .text(function (d) {
+                        return d;
+                    });
+
+                var menu2 = d3.select("body")
+                    .append("div")
+                    .attr("id", "menu");
+                var text = menu2.append('span')
+                    .text('Select Y-Axis variable: ');
+                var options = menu2.append('select')
+                    .attr('id', 'options')
+                    .on('change', changeCordY) //the event listener!
+                    .selectAll('option')
+                    .data(order)
+                    .enter()
+                    .append('option')
+                    .attr("value", function (d) {
+                        return d;
+                    })
+                    .text(function (d) {
+                        return d;
+                    });
+
+                function changeCordX(){
+                    var selection = this.value;
+                    points = svg.selectAll(".dot")
+                        .call(function () {
+                        /*---update the xScale---*/
+                        new_xScale = d3.scale.linear()
+                        .domain([d3.min([0, d3.min(data, function(d){
+                            return parseFloat(d[selection]);
+                        })]), 
+                        d3.max([0, d3.max(data, function(d){
+                            return parseFloat(d[selection]);
+                        })])
+                        ])
+                        .range([0, width]); 
+                        });
+                    points.transition()
+                        .duration(1000)
+                        .attr("transform", function (d){
+                            var cordx = d3.select(this).attr("cx")
+                            var cordy = d3.select(this).attr("cy")
+                            //console.log(cordx, cordy)
+                            return "translate("+(new_xScale(d[selection]) - cordx)
+                    +","+"0"+")"
+                    });
+                    x_axis = selection
+                }
+            
+                function changeCordY(){
+                    var selection = this.value;
+                    points = svg.selectAll(".dot")
+                        .call(function () {
+                        /*---update the yScale---*/
+                        new_yScale = d3.scale.linear()
+                        .domain([d3.min([0, d3.min(data, function(d){
+                            return parseFloat(d[selection]);
+                        })]), 
+                        d3.max([0, d3.max(data, function(d){
+                            return parseFloat(d[selection]);
+                        })])
+                        ])
+                        .range([height, 0]);
+                        })
+                    points.transition()
+                        .duration(1000)
+                        .attr("transform", function (d){
+                            var cordx = d3.select(this).attr("cx")
+                            var cordy = d3.select(this).attr("cy")
+                            return "translate("+"0"
+                    +","+(new_yScale(d[selection]) - cordy)+")"
+                    });
+                    y_axis = selection
+                }
+
+            });
+
+        </script>
+    </div>
+</body>

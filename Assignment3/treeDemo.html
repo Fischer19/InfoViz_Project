@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font: 10px sans-serif;
+        }
+
+        .link {
+            fill: none;
+            stroke: #000;
+        }
+
+        .border {
+            fill: none;
+            shape-rendering: crispEdges;
+            stroke: #aaa;
+        }
+
+        .node {
+            stroke: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script>
+
+        var margin = { top: 50, right: 50, bottom: 50, left: 50 },
+            width = 500,
+            height = 500;
+
+
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+        d3.json("treeExample.json", function (error, treeData) {
+            if (error) throw error;
+            // Compute the layout.
+            var tree = d3.layout.tree()
+                       .size([400, 400]);
+                       
+                nodes = tree.nodes(treeData),
+                links = tree.links(nodes);
+                console.log(nodes)
+            // Create the path generator;
+            var diagonal = d3.svg.diagonal()
+            // Create the node circles.
+            var node = svg.selectAll(".node")
+                            .data(nodes)
+                            .enter()
+                            .append("g")
+                            .attr("class", "node")
+                            .attr("transform", function(d){
+                                return "translate(" + d.y + "," + d.x + ")"
+                            });
+
+                node.append("circle")
+                    .attr("r", 10); //default x, y are 0
+            //Create the link lines.
+            var link = svg.selectAll(".link")
+                            .data(links)
+                            .enter()
+                            .append("path")
+                            .attr("d", diagonal.projection(function(d){
+                                return [d.y, d.x]
+                            })) // equivalent to function(d){return diagonal(d)}
+                            .style("fill", "none")
+                            .style("stroke", "green")
+            
+        });
+
+
+           
+           
+           
+           
+            //var diagonal = d3.svg.diagonal();
+
+            
+                // diagonal.source({ "x": 10, "y": 10 });
+                // diagonal.target({ "x": 100, "y": 100 });
+
+        //     svg.append("path")
+        //         .attr("stroke", "red")
+        //         .attr("fill", "none")
+        //         .attr("d", diagonal);
+        // });
+        
+        // function test(){
+        //     function A(arg1, arg2){
+        //         console.log(arg1, arg2)
+        //     }
+        //     return A;
+        // }
+        // var a = test();
+        // console.log(a(1, 2))
+        // var a, b;
+        // (function () {
+        //     function A(arg1, arg2) {
+        //         this.a = 1;
+        //         this.b = 2;
+        //     }
+        //     A.prototype.log = function () {
+        //         console.log(this.a);
+        //     }
+        //     a = new A();
+        //     b = new A();
+        // })();
+        // a.log();
+        // b.log();
+
+
+    </script>
+</body>
+
+</html>
